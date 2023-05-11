@@ -15,16 +15,16 @@
 #define PWM_M1_M2 3
 
 //MOTOR LEFT
-#define M3_M4_IN1 7
-#define M3_M4_IN2 8
+#define M3_M4_IN2 7
+#define M3_M4_IN1 8
 #define PWM_M3_M4 6
 
 int minValues[8] = { 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000 };
 int maxValues[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 int sensor_values[8];
 int lastError = 0;
-const int MAX_SPEED = 255;
-const int HALF_SPEED = 150;
+const int MAX_SPEED = 220;
+const int HALF_SPEED = 180;
 
 void setupPin() {
   pinMode(s0, INPUT);
@@ -54,9 +54,9 @@ int sensorNormalization(int position) {
 
 void getMinAndMaxValues() {
 
-  MotorsRight(255);                  //editar esse valor depois
-  MotorsLeft(0);                     //editar esse valor depois
-  for (int i = 0; i < 80000; i++) {  //editar esse valor depois
+  MotorsRight(180);                  //editar esse valor depois
+  MotorsLeft(100);                     //editar esse valor depois
+  for (int i = 0; i < 8000; i++) {  //editar esse valor depois
     readSensors();
     for (int i = 0; i < 8; i++) {
       if (sensor_values[i] < minValues[i]) {
@@ -68,9 +68,9 @@ void getMinAndMaxValues() {
     }
   }
 
-  MotorsRight(0);                    //editar esse valor depois
-  MotorsLeft(255);                   //editar esse valor depois
-  for (int i = 0; i < 80000; i++) {  //editar esse valor depois
+  MotorsRight(100);                    //editar esse valor depois
+  MotorsLeft(180);                   //editar esse valor depois
+  for (int i = 0; i < 8000; i++) {  //editar esse valor depois
     readSensors();
     for (int i = 0; i < 8; i++) {
       if (sensor_values[i] < minValues[i]) {
@@ -114,8 +114,9 @@ void loop() {
   int m1Speed = HALF_SPEED + speedDifference;
   int m2Speed = HALF_SPEED - speedDifference;
 
-  MotorsRight(m1Speed);
-  MotorsLeft(m2Speed);
+ /* MotorsRight(m1Speed);
+  MotorsLeft(m2Speed);*/
+  
 }
 
 
