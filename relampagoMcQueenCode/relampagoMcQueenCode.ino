@@ -1,4 +1,3 @@
-
 //SENSORES
 #define s0 A0
 #define s1 A1
@@ -23,10 +22,11 @@ int minValues[8] = { 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000 };
 int maxValues[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 int sensor_values[8];
 int lastError = 0;
-const int MAX_SPEED = 220;
-const int HALF_SPEED = 180;
+const int MAX_SPEED = 250;
+const int HALF_SPEED = 200;
 
 void setupPin() {
+  Serial.begin(9600);
   pinMode(s0, INPUT);
   pinMode(s1, INPUT);
   pinMode(s2, INPUT);
@@ -44,33 +44,17 @@ void setupPin() {
 }
 
 int getPosition() {
-  return (3 * sensorNormalization(1) + 2 * sensorNormalization(2) + 1 * sensorNormalization(3) - 1 * sensorNormalization(4) - 2 * sensorNormalization(5) - 3 * sensorNormalization(6));
+  return (3 * sensorNormalization(1) + 2 * sensorNormalization(2) + 1 * sensorNormalization(3) + 1 * sensorNormalization(4) + 2 * sensorNormalization(5) + 3 * sensorNormalization(6));
 }
 
 int sensorNormalization(int position) {
-  int result = (((sensor_values[position] - minValues[position]) / (maxValues[position] - minValues[position])) * 1000);
+  float result = ((((sensor_values[position] - minValues[position])* 1.0) / (maxValues[position] - minValues[position]))*1000);
   return result;
 }
 
 void getMinAndMaxValues() {
-
-  MotorsRight(180);                  //editar esse valor depois
-  MotorsLeft(100);                     //editar esse valor depois
-  for (int i = 0; i < 8000; i++) {  //editar esse valor depois
-    readSensors();
-    for (int i = 0; i < 8; i++) {
-      if (sensor_values[i] < minValues[i]) {
-        minValues[i] = sensor_values[i];
-      }
-      if (sensor_values[i] > maxValues[i]) {
-        maxValues[i] = sensor_values[i];
-      }
-    }
-  }
-
-  MotorsRight(100);                    //editar esse valor depois
-  MotorsLeft(180);                   //editar esse valor depois
-  for (int i = 0; i < 8000; i++) {  //editar esse valor depois
+  //editar esse valor depois
+  for (int i = 0; i < 15000; i++) {  //editar esse valor depois
     readSensors();
     for (int i = 0; i < 8; i++) {
       if (sensor_values[i] < minValues[i]) {
@@ -95,30 +79,51 @@ void readSensors() {
 }
 
 int calculateError(int position) {
-  return position - 3000;
+  return (position - 3000);
 }
 
 
 void setup() {
+  Serial.begin(9600);
   setupPin();
   getMinAndMaxValues();
-  delay(10000);
+  for (int i = 0; i < 8; i++) {
+    Serial.println("Min value $i:     ");
+    Serial.println(minValues[i]);
+  }
+  for (int i = 0; i < 8; i++) {
+    Serial.println("Max value $i:     ");
+    Serial.println(maxValues[i]);
+  }
+  Serial.println();
 }
 
 void loop() {
+
   readSensors();
   int position = getPosition();
   int error = calculateError(position);
-  int speedDifference = error / 2 + 8 * (error - lastError);
+  int speedDifference = error / 500 + 2 * (error - lastError);
   lastError = error;
   int m1Speed = HALF_SPEED + speedDifference;
   int m2Speed = HALF_SPEED - speedDifference;
 
- /* MotorsRight(m1Speed);
-  MotorsLeft(m2Speed);*/
-  
-}
+  Serial.println("POSICAO:               ");
+  Serial.println(position);
+  Serial.println("ERROR:               ");
+  Serial.println(error);
+  Serial.println("SPEEDDIFFERENCE:               ");
+  Serial.println(speedDifference);
+  Serial.println("M1SPEED:               ");
+  Serial.println(m1Speed);
+  Serial.println("M2SPEED:               ");
+  Serial.println(m2Speed);
 
+
+  // MotorsRight(200);
+  // MotorsLeft(200);
+  delay(5000);
+}
 
 void MotorsRight(int pwm) {
   digitalWrite(M1_M2_IN1, HIGH);
