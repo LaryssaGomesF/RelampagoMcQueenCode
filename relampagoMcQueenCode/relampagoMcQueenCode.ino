@@ -22,8 +22,8 @@ int minValues[8] = { 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000 };
 int maxValues[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 int sensor_values[8];
 int lastError = 0;
-const int MAX_SPEED = 250;
-const int HALF_SPEED = 200;
+const int MAX_SPEED = 180;
+const int HALF_SPEED = 120;
 
 void setupPin() {
   Serial.begin(9600);
@@ -44,11 +44,11 @@ void setupPin() {
 }
 
 int getPosition() {
-  return (3 * sensorNormalization(1) + 2 * sensorNormalization(2) + 1 * sensorNormalization(3) + 1 * sensorNormalization(4) + 2 * sensorNormalization(5) + 3 * sensorNormalization(6));
+  return (3 * sensorNormalization(1) + 2 * sensorNormalization(2) + 1 * sensorNormalization(3) - 1 * sensorNormalization(4) - 2 * sensorNormalization(5) - 3 * sensorNormalization(6));
 }
 
 int sensorNormalization(int position) {
-  float result = ((((sensor_values[position] - minValues[position])* 1.0) / (maxValues[position] - minValues[position]))*1000);
+  float result =  ((((sensor_values[position] - minValues[position]) * 1.0) / (maxValues[position] - minValues[position])) * 1000);
   return result;
 }
 
@@ -76,10 +76,11 @@ void readSensors() {
   sensor_values[5] = { analogRead(s5) };
   sensor_values[6] = { analogRead(s6) };
   sensor_values[7] = { analogRead(s7) };
+  
 }
 
 int calculateError(int position) {
-  return (position - 3000);
+  return ((position - 3000) / (1000.0));
 }
 
 
@@ -102,27 +103,27 @@ void loop() {
 
   readSensors();
   int position = getPosition();
-  int error = calculateError(position);
-  int speedDifference = error / 500 + 2 * (error - lastError);
-  lastError = error;
+  // int error = calculateError(position);
+  int speedDifference = position/2;
+  // + 18.5* (position - lastError);
+  lastError = position;
   int m1Speed = HALF_SPEED + speedDifference;
   int m2Speed = HALF_SPEED - speedDifference;
 
   Serial.println("POSICAO:               ");
   Serial.println(position);
   Serial.println("ERROR:               ");
-  Serial.println(error);
-  Serial.println("SPEEDDIFFERENCE:               ");
-  Serial.println(speedDifference);
+   //Serial.println(error);
+
   Serial.println("M1SPEED:               ");
   Serial.println(m1Speed);
   Serial.println("M2SPEED:               ");
   Serial.println(m2Speed);
 
 
-  // MotorsRight(200);
-  // MotorsLeft(200);
-  delay(5000);
+  MotorsRight(m1Speed);
+  MotorsLeft(m2Speed);
+
 }
 
 void MotorsRight(int pwm) {
