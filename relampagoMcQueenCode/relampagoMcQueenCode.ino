@@ -26,9 +26,10 @@ int sensor_values[8];
 int lastError = 0;
 int integral = 0;
 const int MAX_SPEED = 255;
-int HALF_SPEED = 210;
-int MIN_SPEED = 150;
-const float KP = 6.0;
+int HALF_SPEED = 150;
+int MIN_SPEED = 120;
+const float KP = 8.0;
+const float KD = 30.0;
 const float C1 = 1.0;
 const float C2 = 2.0;
 const float C3 = 3.0;
@@ -53,8 +54,8 @@ void setupPin() {
 
 void getMinAndMaxValues() {
 
-  MotorsLeft(-250);
-  MotorsRight(250);
+  MotorsLeft(-HALF_SPEED);
+  MotorsRight(HALF_SPEED);
   for (int i = 0; i < 3000; i++) {
     readSensors();
     for (int i = 0; i < 8; i++) {
@@ -66,8 +67,8 @@ void getMinAndMaxValues() {
       }
     }
   }
-  MotorsLeft(250);
-  MotorsRight(-250);
+  MotorsLeft(HALF_SPEED);
+  MotorsRight(-HALF_SPEED);
   for (int i = 0; i < 3000; i++) {
     readSensors();
     for (int i = 0; i < 8; i++) {
@@ -126,7 +127,7 @@ void loop() {
 
   float pos = getPosition();
   int error = calculateError(pos);
-  int speedDifference = KP * error;  // + 2*(error - lastError) + 0*integral;
+  int speedDifference = KP * error + KD *(error - lastError); //+ 0*integral;
   lastError = error;
   integral += error;
 
