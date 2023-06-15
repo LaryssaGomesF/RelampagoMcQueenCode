@@ -26,8 +26,8 @@ int sensor_values[8];
 int lastError = 0;
 int integral = 0;
 const int MAX_SPEED = 255;
-int HALF_SPEED = 150;
-int MIN_SPEED = 120;
+int HALF_SPEED = 110;
+int MIN_SPEED = 90;
 const float KP = 8.0;
 const float KD = 30.0;
 const float C1 = 1.0;
@@ -80,8 +80,7 @@ void getMinAndMaxValues() {
       }
     }
   }
-  MotorsLeft(0);
-  MotorsRight(0);
+  motorStop();
 }
 
 float getPosition() {
@@ -127,7 +126,7 @@ void loop() {
 
   float pos = getPosition();
   int error = calculateError(pos);
-  int speedDifference = KP * error + KD *(error - lastError); //+ 0*integral;
+  int speedDifference = KP * error + KD * (error - lastError);  //+ 0*integral;
   lastError = error;
   integral += error;
 
@@ -180,7 +179,13 @@ void loop() {
   Serial.println();
 
  */
+}
 
+void motorStop() {
+  digitalWrite(M1_M2_IN1, LOW);
+  digitalWrite(M1_M2_IN2, LOW);
+  digitalWrite(M3_M4_IN1, LOW);
+  digitalWrite(M3_M4_IN2, LOW);
 }
 
 void MotorsRight(int pwm) {
