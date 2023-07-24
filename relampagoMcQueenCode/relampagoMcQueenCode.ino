@@ -27,13 +27,15 @@ int maxValues[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 int sensor_values[8];
 int lastError = 0;
 int integral = 0;
-bool atual = false;
-bool anterior = false;
+bool anteriorE = false;
+bool anteriorD = false;
 const int MAX_SPEED = 255;
-int HALF_SPEED = 120;
+int HALF_SPEED = 110;
+int HALF_SPEED_STRAIGHT = 140;
+int HALF_SPEED_CURVE = 120;
 int MIN_SPEED = 90;
-const float KP = 10.0;
-const float KD = 15.0;
+const float KP = 12.0;
+const float KD = 20.0;
 const float C1 = 1.0;
 const float C2 = 2.0;
 const float C3 = 3.0;
@@ -61,7 +63,7 @@ void getMinAndMaxValues() {
 
   MotorsLeft(-160);
   MotorsRight(160);
-  for (int i = 0; i < 3000; i++) {
+  for (int j = 0; j < 3000; j++) {
     readSensors();
     for (int i = 0; i < 8; i++) {
       if (sensor_values[i] < minValues[i]) {
@@ -74,7 +76,7 @@ void getMinAndMaxValues() {
   }
   MotorsLeft(160);
   MotorsRight(-160);
-  for (int i = 0; i < 3000; i++) {
+  for (int j = 0; j < 3000; j++) {
     readSensors();
     for (int i = 0; i < 8; i++) {
       if (sensor_values[i] < minValues[i]) {
@@ -93,7 +95,7 @@ float getPosition() {
 }
 
 float sensorNormalization(int pos) {
-  float result = ((sensor_values[pos] - minValues[pos]) / (1.0 * (maxValues[pos] - minValues[pos])));
+  float result = ((1.0* (sensor_values[pos] - minValues[pos])) / (1.0 * (maxValues[pos] - minValues[pos])));
   return 1.0 - result;
 }
 
@@ -124,10 +126,36 @@ void setup() {
 
 int flag = 0;
 int contD = 0;
+int contE = 0;
 
 void loop() {
 
   readSensors();
+  
+  if (sensor_values[0] < 800 && anteriorD == false) {
+    anteriorD = true;
+    //digitalWrite(LED, HIGH);
+  } else if (sensor_values[0] > 800 && anteriorD == true) {
+    anteriorD = false;
+    //digitalWrite(LED, LOW);
+    contD++;
+  }
+
+  if (sensorNormalization(7) > 0.24 && anteriorE == false) {
+    anteriorE = true;
+    digitalWrite(LED, HIGH);
+  } else if (sensorNormalization(7) < 0.24  && anteriorE == true) {
+    anteriorE = false;
+    digitalWrite(LED, LOW);
+    contE++;
+  }
+
+  bool isOdd = contE % 2 ; 
+  if(isOdd && contE != 5 && contE != 6 && contE != 9 && contE != 10 && contE != 13 && contE != 14 && contE != 19 && contE != 20){
+    HALF_SPEED = HALF_SPEED_CURVE;
+  }else{
+    HALF_SPEED = HALF_SPEED_STRAIGHT;
+  }
 
   float pos = getPosition();
   int error = calculateError(pos);
@@ -137,18 +165,6 @@ void loop() {
 
   int m1Speed = HALF_SPEED + speedDifference;
   int m2Speed = HALF_SPEED - speedDifference;
-
-
-  if (sensor_values[0] < 800 && anterior == false) {
-    anterior = true;
-    digitalWrite(LED, HIGH);
-  }else if(sensor_values[0] > 800 && anterior == true){
-    anterior = false;
-    digitalWrite(LED, LOW);
-    contD++; 
-  }
-
-
 
   if (contD >= 10) {
     motorStop();
@@ -193,7 +209,7 @@ void loop() {
   Serial.println();
   Serial.println();
   Serial.println();
-  delay(5000);*/
+  delay(5000);
 
   /*Serial.print("P:");
   Serial.print(pos);
