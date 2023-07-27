@@ -9,6 +9,7 @@
 #define s7 A7
 
 #define LED 12
+#define BUTTON 13
 
 //MOTOR RIGHT
 #define M1_M2_IN1 4
@@ -31,8 +32,8 @@ bool anteriorE = false;
 bool anteriorD = false;
 const int MAX_SPEED = 255;
 int HALF_SPEED = 110;
-int HALF_SPEED_STRAIGHT = 140;
-int HALF_SPEED_CURVE = 120;
+int HALF_SPEED_STRAIGHT = 160;
+int HALF_SPEED_CURVE = 130;
 int MIN_SPEED = 90;
 const float KP = 12.0;
 const float KD = 20.0;
@@ -118,10 +119,12 @@ int calculateError(float pos) {
 void setup() {
   Serial.begin(9600);
   setupPin();
+ 
+  while(!digitalRead(BUTTON));
   getMinAndMaxValues();
   Serial.print("Ready");
   Serial.println();
-  delay(3000);
+  while(!digitalRead(BUTTON));
 }
 
 int flag = 0;
